@@ -1,27 +1,30 @@
+basePath: /
 definitions:
-  main.Welcome:
+  main.User:
     properties:
-      id:
-        example: "1"
-        format: int64
+      access_token:
         type: string
-    type: object
-  main.Welcome2:
-    properties:
-      name:
-        example: somename
-        format: string
+      authenticated:
+        type: boolean
+      username:
         type: string
     type: object
 info:
-  contact: {}
-  license: {}
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
+  description: This is a sample server Petstore server.
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: Go Gin API framework - Boilerplate code
+  version: "3.0"
 paths:
-  /welcome:
+  /auth/user:
     get:
-      consumes:
-      - application/json
-      description: This is the welcome page
+      description: auth handler
       produces:
       - application/json
       - application/json
@@ -29,28 +32,36 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/main.Welcome'
-      summary: welcome page
-      tags:
-      - welcome
-  /welcome2:
-    post:
-      consumes:
-      - application/json
-      description: This is the welcome2 page
-      produces:
-      - application/json
-      - text/plain
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
+            $ref: '#/definitions/main.User'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/main.Welcome2'
-      summary: welcome2 page
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - "": []
+      summary: auth handler
       tags:
-      - welcome2
+      - User
+  /info:
+    get:
+      description: This is the info page
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: info page
+      tags:
+      - Info
+securityDefinitions:
+  "":
+    authorizationUrl: http://localhost:8099/auth/realms/demo/protocol/openid-connect/auth
+    flow: implicit
+    type: oauth2
 swagger: "2.0"

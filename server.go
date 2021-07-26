@@ -38,8 +38,8 @@ func (s *Server) setupRoutes() *gin.Engine {
 }
 
 // Run runs the server
-func (s *Server) Run() {
-	s.app.Run(s.config.ServerAddr)
+func (s *Server) Run() (err error) {
+	return s.app.Run(s.config.ServerAddr)
 }
 
 func createLogger(config *Config) (*zap.Logger, error) {

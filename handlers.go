@@ -6,39 +6,34 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// Welcome godoc
-// @Summary welcome page
-// @Description This is the welcome page
-// @Tags welcome
-// @Accept  json
+// Info godoc
+// @Summary info page
+// @Description This is the info page
+// @Tags Info
 // @Produce  json
-// @Produce  json
-// @Success 200 {object} Welcome
-// @Router /welcome [get]
-func (s *Server) Welcome(c *gin.Context) {
-	ret := Welcome{Id: "1"}
-	c.JSON(http.StatusOK, ret)
+// @Success 200 {object} map[string]string
+// @Router /info [get]
+func (s *Server) Info(c *gin.Context) {
+	info := map[string]string{"version": version}
+	c.JSON(http.StatusOK, info)
 }
 
-type Welcome struct {
-	Id string `json:"id" example:"1" format:"int64"`
+// AuthWelcome godoc
+// @Summary auth handler
+// @Description auth handler
+// @Tags User
+// @Produce json
+// @Produce application/json
+// @Success 200 {object} User
+// @Success 400 {object} map[string]string
+// @Router /auth/user [get]
+// @Security
+func (s *Server) AuthWelcome(c *gin.Context) {
+	user := c.MustGet("user")
+	c.JSON(http.StatusOK, user)
 }
 
-// Welcome2 godoc
-// @Summary welcome2 page
-// @Description This is the welcome2 page
-// @Tags welcome2
-// @Accept  json
-// @Produce  json
-// @Produce  text/plain
-// @Success 200 {string} Welcome2
-// @Success 400 {object} Welcome2
-// @Router /welcome2 [post]
-func (s *Server) Welcome2(c *gin.Context) {
-	ret := Welcome2{Name: "somename"}
-	c.JSON(http.StatusOK, ret)
-}
-
-type Welcome2 struct {
-	Name string `json:"name" example:"somename" format:"string"`
+func (s *Server) Oauth2RedirectUri(c *gin.Context) {
+	// c.Request.Response.Header.Add("content-type", "text/html")
+	c.HTML(http.StatusOK, "oauth2-redirect.html", nil)
 }

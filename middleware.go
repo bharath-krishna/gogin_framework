@@ -1,12 +1,23 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt"
 	"go.uber.org/zap"
 )
+
+var hmacSampleSecret []byte
+
+type User struct {
+	Username      string `json:"username"`
+	Authenticated bool   `json:"authenticated"`
+	AccessToken   string `json:"access_token"`
+}
 
 func (s *Server) LoggingMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -29,11 +40,33 @@ func (s *Server) AllowOriginRequests() gin.HandlerFunc {
 		c.Header("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE,OPTIONS")
 		c.Header("Access-Control-Allow-Headers", "authorization, origin, content-type, accept")
 		c.Header("Allow", "HEAD,GET,POST,PUT,PATCH,DELETE,OPTIONS")
-		c.Header("Content-Type", "application/json")
 		if c.Request.Method == "OPTIONS" {
 			c.AbortWithStatus(http.StatusOK)
 		} else {
 			c.Next()
+		}
+	}
+}
+
+func (s *Server) AuthMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		authHeader := c.Request.Header.Get("Authorization")
+		bearerToken := strings.Split(authHeader, " ")
+		if len(bearerToken) != 2 {
+			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Unauthorized"})
+			return
+		}
+		accessToken := bearerToken[1]
+		token, err := jwt.Parse(accessToken, func(token *jwt.Token) (interface{}, error) {
+			if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
+				return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
+			}
+			return hmacSampleSecret, nil
+		})
+		if claims, ok := token.Claims.(jwt.MapClaims); ok {
+			c.Set("user", &User{Username: claims["username"].(string), Authenticated: true, AccessToken: token.Raw})
+		} else {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		}
 	}
 }
