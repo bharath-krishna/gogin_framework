@@ -50,7 +50,6 @@ func (s *Server) AllowOriginRequests() gin.HandlerFunc {
 func (s *Server) AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		bearerToken := c.Request.Header.Get("X-Forwarded-Access-Token")
-		fmt.Println(bearerToken, "*************")
 
 		if bearerToken == "" {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
