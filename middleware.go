@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -50,23 +49,25 @@ func (s *Server) AllowOriginRequests() gin.HandlerFunc {
 
 func (s *Server) AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		authHeader := c.Request.Header.Get("Authorization")
-		bearerToken := strings.Split(authHeader, " ")
-		if len(bearerToken) != 2 {
-			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Unauthorized"})
+		bearerToken := c.Request.Header.Get("X-Forwarded-Access-Token")
+		fmt.Println(bearerToken, "*************")
+
+		if bearerToken == "" {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 			return
 		}
-		accessToken := bearerToken[1]
-		token, err := jwt.Parse(accessToken, func(token *jwt.Token) (interface{}, error) {
+		token, err := jwt.Parse(bearerToken, func(token *jwt.Token) (interface{}, error) {
 			if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
 				return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
 			}
 			return hmacSampleSecret, nil
 		})
 		if claims, ok := token.Claims.(jwt.MapClaims); ok {
-			c.Set("user", &User{Username: claims["username"].(string), Authenticated: true, AccessToken: token.Raw})
+			c.Set("user", &User{Username: claims["preferred_username"].(string), Authenticated: true, AccessToken: token.Raw})
 		} else {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		}
+
+		c.Next()
 	}
 }

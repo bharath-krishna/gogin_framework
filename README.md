@@ -40,3 +40,42 @@ To stop the container run
 > docker stop gogine_framework
 > docker rm gogine_framework
 ```
+
+## Run behind a reverse proxy
+### Oauth2-Proxy
+
+download oauth2-proxy as 
+```bash
+go get github.com/oauth2-proxy/oauth2-proxy/v7
+```
+
+Assuming we are using keycloak as auth provider running at `http://localhost:8099/auth/`
+
+Use below command line arguments
+
+```bash
+oauth2-proxy \
+--provider=keycloak \
+--client-id=<client_id> \
+--client-<client_secret> \
+--login-url="auth_url" \
+--redeem-url="token_url" \
+--profile-url="userinfo_url" \
+--validate-url="userinfo_url" \
+--cookie-secret="cookie_secret_text" \
+--email-domain="*" \
+--upstream="http://localhost:8088" \ # Upstream api to be protected
+--http-address="http://localhost:8888" \ # address for proxy to tun
+--cookie-secure=false \
+--ssl-upstream-insecure-skip-verify=true \
+--redirect-url="http://localhost:8888/oauth2/callback" \ # Proxy callback URL
+--pass-access-token=true \
+--whitelist-domain="localhost:8099" \ # keycloak URL
+--skip-provider-button=true \
+--skip-auth-route="/swagger/*,/info" \ #endpoints to skip proxy auth
+--pass-access-token=true \ # To call proxy with bearer token for UIs
+--skip-jwt-bearer-tokens \ # To call proxy with bearer token for UIs
+--extra-jwt-issuers="http://localhost:8099/auth/realms/demo=demo-client" # to validate bearer token
+```
+
+Now you can directly call `http://localhost:8888/` with all the endpoints your api provides and proxy endpoints (make sure not overlap)

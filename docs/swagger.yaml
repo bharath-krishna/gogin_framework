@@ -22,7 +22,44 @@ info:
   title: Go Gin API framework - Boilerplate code
   version: "3.0"
 paths:
-  /auth/user:
+  /:
+    get:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      tags:
+      - Welcome
+  /info:
+    get:
+      description: This is the info page
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: info page
+      tags:
+      - Info
+  /user:
     get:
       description: auth handler
       produces:
@@ -44,21 +81,6 @@ paths:
       summary: auth handler
       tags:
       - User
-  /info:
-    get:
-      description: This is the info page
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: info page
-      tags:
-      - Info
 securityDefinitions:
   "":
     authorizationUrl: http://localhost:8099/auth/realms/demo/protocol/openid-connect/auth
